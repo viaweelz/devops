@@ -1,0 +1,31 @@
+name: Deploy Node.js App
+
+on:
+  push:
+    branches: [main]
+
+env:
+  NODE_VERSION: 20.x
+  APP_NAME: nodejs-server
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Node.js version ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Deploy to Cloud
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            mkdir /opt/${{ env.APP_NAME }}
+            cd /opt/${{ env.APP_NAME }}
+            git pull origin main
+            npm start
+            echo "Deployment Done!"
